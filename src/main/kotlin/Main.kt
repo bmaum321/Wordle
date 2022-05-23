@@ -1,18 +1,16 @@
 import com.brian.wordle.api.ApiClient
 import com.brian.wordle.usecase.GetRandomWordUseCase
+import com.brian.wordle.usecase.PlayGameUseCase
 import com.brian.wordle.usecase.RandomWordResults
-import com.brian.wordle.userinput.getGuess
+import com.brian.wordle.userinput.SelectDifficulty
 import java.io.File
-
-
+import com.brian.wordle.data.Constants
 
 suspend fun main() {
-    /*
     val apiClient = ApiClient()
     val getRandomWordsUseCase = GetRandomWordUseCase(apiClient)
-
-
-    suspend fun getRandomWord(): String? {
+    val playGame = PlayGameUseCase()
+    suspend fun getRandomWordFromApi(): String? {
         return when (val random = getRandomWordsUseCase.getRandomWord()) {
             is RandomWordResults.Success -> {
                 //println(random.response.word)
@@ -26,61 +24,52 @@ suspend fun main() {
         }
     }
 
+    /**
+     * Create master word list from the file. The file is the official Scrabble TWL(tournament word list)
      */
-
-    val wordList = mutableListOf<String>()
+    val masterWordList = mutableListOf<String>()
     File("src/main/kotlin/com/brian/wordle/data/words").readLines().forEach {
-        (wordList.add(it))
+        (masterWordList.add(it))
     }
-    val answer = wordList.filter { it.length == 5 }.random()
-   // val answer = getRandomWord() //Gets random word from API
-    val answerCharArray = answer?.toCharArray() // turns it into a character array
-    var userGuessCharArray = getGuess(wordList).toCharArray() // Gets initial guess from user input
-    var guessCount = 0
-    val guessedCharsInAnswer = mutableListOf<Char>()
-    val guessedCharsNotInAnswer = mutableListOf<Char>()
-    val answerBuilder = mutableListOf('_', '_', '_', '_', '_')
+    /**
+     * I feel like there are ways to combine some of these statements to make the code more concise
+     */
+    val fiveLetterWords = masterWordList.filter { it.length == 5 } // filter 5-letter words
+    val wordListAsCharArrays = mutableListOf<CharArray>()
+    fiveLetterWords.forEach { wordListAsCharArrays.add(it.toCharArray()) } // adds the 5-letter words to a new list as char arrays
 
-
-    while (! userGuessCharArray.contentEquals(answerCharArray) && guessCount < 5) {
-        answerCharArray?.forEach {
-            if (it == userGuessCharArray[answer.indexOf(it)]) {
-                answerBuilder[answer.indexOf(it)] = it
-            }
+    when (SelectDifficulty().getDifficulty()) {
+        Constants.EASY -> {
+            /**
+             * This difficulty will find words that have no repeating letters, this could be sxpaneded upon to find more
+             * common words
+             */
+            val answer = wordListAsCharArrays.filter { it.distinct().count() == 5 }.random().joinToString("")
+            playGame.wordleGame(answer, masterWordList)
         }
-        /**
-         * This needs to be separate from other if statement because there can be duplicate letters in answer which
-         * can be confusing in the console
-         */
-        answerCharArray?.forEach {
-            if (it in userGuessCharArray) {
-                guessedCharsInAnswer.add(it)
-            }
+        Constants.MEDIUM -> {
+            /**
+             * This difficulty will use all 5-letter words in the list, so words can have repeating letters
+             */
+            val answer = fiveLetterWords.random()
+            playGame.wordleGame(answer, masterWordList)
         }
-        println(
-                answerBuilder.toString().replace(",", "").replace("[", "").replace("]", "").trim()
-        )
-
-        userGuessCharArray.forEach { guessedCharsNotInAnswer.add(it) } // creates list of all guessed characters
-        /**
-         * should subtract chars in answer from this list
-         */
-        guessedCharsInAnswer.forEach {
-            if( it in guessedCharsNotInAnswer) {
-                guessedCharsNotInAnswer.remove(it)
+        Constants.HARD -> {
+            /**
+             * This difficulty will pull a random word from the words API
+             */
+            val answer = getRandomWordFromApi() //Gets random word from API
+            if (answer == null) {
+                println("Failed to retrieve word from API")
+            } else {
+                playGame.wordleGame(answer, masterWordList)
             }
+            /**
+             *There is a bug here, the api can pick words that aren't in the word list file, so even though the correct
+             * word may be chosen, the input will fail because it is not found in the word list that the function checks
+             * against
+             *
+             */
         }
-        println("Characters not in the answer: ${guessedCharsNotInAnswer.toSet()}")
-        println("Characters in the answer: ${guessedCharsInAnswer.toSet()}") //to set gets rid of duplicates in list
-        guessCount ++
-        userGuessCharArray = getGuess(wordList).toCharArray() // gets new answer from user
     }
-
-    if (userGuessCharArray.contentEquals(answerCharArray)) {
-        println("\nCongrats! You win! Answer was: $answer")
-    } else {
-        println("\nSorry, please try again")
-        print("Answer was: $answer")
-    }
-
 }
