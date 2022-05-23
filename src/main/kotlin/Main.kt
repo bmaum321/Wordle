@@ -27,35 +27,40 @@ suspend fun main() {
     var guessCount = 0
     val guessedCharsInAnswer = mutableListOf<Char>()
     val totalGuessedChars = mutableListOf<Char>()
-    val answerBuilder = mutableMapOf(0 to '_', 1 to '_', 2 to '_', 3 to '_', 4 to '_')
+    val answerBuilder = mutableListOf<Char>('_', '_', '_', '_', '_')
 
-    while (!userGuessCharArray.contentEquals(answerCharArray) && guessCount < 5) {
 
+    while (! userGuessCharArray.contentEquals(answerCharArray) && guessCount < 5) {
         answerCharArray?.forEach {
             if (it == userGuessCharArray[answer.indexOf(it)]) {
-                answerBuilder.put(answer.indexOf(it), it)
-                /**
-                 * There is a bug here, Ex. if the word was borty, and the first guess was horte, and next one busty,
-                 * it will give you the answer even though you have not guessed it correctly
-                 */
+                answerBuilder[answer.indexOf(it)] = it
             }
         }
+        /**
+         * This needs to be separate from other if statement because there can be duplicate letters in answer which
+         * can be confusing in the console
+         */
         answerCharArray?.forEach {
             if (it in userGuessCharArray) {
                 guessedCharsInAnswer.add(it)
             }
         }
         println(
-            answerBuilder.values.toString().replace(",", "").replace("[", "").replace("]", "").trim()
+                answerBuilder.toString().replace(",", "").replace("[", "").replace("]", "").trim()
         )
 
         userGuessCharArray.forEach { totalGuessedChars.add(it) } // creates list of all guessed characters
-        /**s
+        /**
          * should subtract chars in answer from this list
          */
-        println("List of characters in guesses: ${totalGuessedChars.toSet()}")
-        println("Characters in answer: ${guessedCharsInAnswer.toSet()}") //to set gets rid of duplicates in list
-        guessCount++
+        guessedCharsInAnswer.forEach {
+            if( it in totalGuessedChars) {
+                totalGuessedChars.remove(it)
+            }
+        }
+        println("Characters not in the answer: ${totalGuessedChars.toSet()}")
+        println("Characters in the answer: ${guessedCharsInAnswer.toSet()}") //to set gets rid of duplicates in list
+        guessCount ++
         userGuessCharArray = getGuess().toCharArray() // gets new answer from user
     }
 
@@ -64,7 +69,6 @@ suspend fun main() {
     } else {
         println("\nSorry, please try again")
         print("Answer was: $answer")
-
     }
 
 
