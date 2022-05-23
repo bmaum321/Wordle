@@ -37,7 +37,8 @@ suspend fun main(args: Array<String>) {
         return userGuess
     }
 
-    val answer = getRandom()?.toCharArray()
+    val answer = getRandom()
+    val answerCharArray = answer?.toCharArray()
     var userGuessCharArray = getGuess().toCharArray()
     var guessCount = 0
     val charsInAnswer = mutableListOf<Char>()
@@ -48,7 +49,7 @@ suspend fun main(args: Array<String>) {
      * Also need to track if anly letters in guess are in the answer
      */
 
-    while (!userGuessCharArray.contentEquals(answer) && guessCount < 5) {
+    while (!userGuessCharArray.contentEquals(answerCharArray) && guessCount < 5) {
 /*
         answer?.forEach {
             if (it == userGuessCharArray[answer.indexOf(it)]) {
@@ -60,12 +61,12 @@ suspend fun main(args: Array<String>) {
 
  */
 
-        answer?.forEach {
+        answerCharArray?.forEach {
             if (it == userGuessCharArray[answer.indexOf(it)]) {
                 answerBuilder.put(answer.indexOf(it), it )
             }
         }
-        answer?.forEach {
+        answerCharArray?.forEach {
             if (it in userGuessCharArray) {
                 charsInAnswer.add(it)
             }
@@ -74,16 +75,16 @@ suspend fun main(args: Array<String>) {
             answerBuilder.values.toString().replace(",", "").
             replace("[","").replace("]", "").trim()
         )
-        println(" Characters in answer: ${charsInAnswer.toSet()}") //to set gets rid of duplicates in list
+        println("Characters in answer: ${charsInAnswer.toSet()}") //to set gets rid of duplicates in list
         guessCount++
-        userGuessCharArray = getGuess().toCharArray()
+        userGuessCharArray = getGuess().toCharArray() // gets new answer from user
     }
 
-    if (userGuessCharArray.contentEquals(answer)) {
-        println(" \n Congrats! You win! Answer was: ${answer?.forEach { print(it) }}")
+    if (userGuessCharArray.contentEquals(answerCharArray)) {
+        println("\nCongrats! You win! Answer was: $answer")
     } else {
-        println(" \n Sorry, please try again")
-        print("Answer was: ${answer?.forEach { print(it) }}")
+        println("\nSorry, please try again")
+        print("Answer was: $answer")
 
     }
 
