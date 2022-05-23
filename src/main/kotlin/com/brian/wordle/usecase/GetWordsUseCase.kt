@@ -9,9 +9,9 @@ class GetWordsUseCase(private val apiClient: ApiClient) {
 
     suspend fun getWords(): Results {
         val response = apiClient.getWord()
-        when (response) {
-            is ApiResponse.Success -> return Results.Success(response.data)
-            is ApiResponse.Failure -> return Results.Failure(response.message) // TODO() placeholder
+        return when (response) {
+            is ApiResponse.Success -> Results.Success(response.data)
+            is ApiResponse.Failure -> Results.Failure(response.message) // TODO() placeholder
         }
     }
 }

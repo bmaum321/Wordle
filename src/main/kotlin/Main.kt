@@ -1,81 +1,60 @@
 import com.brian.wordle.api.ApiClient
-import com.brian.wordle.usecase.GetRandomUseCase
-import com.brian.wordle.usecase.GetWordsUseCase
-import com.brian.wordle.usecase.RandomResults
-import com.brian.wordle.usecase.Results
+import com.brian.wordle.usecase.GetRandomWordUseCase
+import com.brian.wordle.usecase.RandomWordResults
+import com.brian.wordle.userinput.getGuess
 
-suspend fun main(args: Array<String>) {
+suspend fun main() {
     val apiClient = ApiClient()
-    val getRandomWordsUseCase = GetRandomUseCase(apiClient)
+    val getRandomWordsUseCase = GetRandomWordUseCase(apiClient)
 
-    suspend fun getRandom(): String? {
-        val random = getRandomWordsUseCase.getRandomWord()
-        return when (random) {
-            is RandomResults.Success -> {
-             //   println(random.response.word)
+    suspend fun getRandomWord(): String? {
+        return when (val random = getRandomWordsUseCase.getRandomWord()) {
+            is RandomWordResults.Success -> {
+                //println(random.response.word)
                 val answer = random.response.word
                 answer
             }
-            is RandomResults.Failure -> {
+            is RandomWordResults.Failure -> {
                 println(random.message.message)
                 null
             }
         }
     }
 
-    /**
-     * Should check if used input is a valid word in dictionary, Can do this with either a dictionary API or with
-     * using some local word list file and checking the input against the list
-     */
-    fun getGuess(): String {
-        println("Enter your guess: ")
-        var userGuess = readln()
-        while (userGuess.length != 5) {
-            println("Guess must be 5 characters, enter new guess")
-            userGuess = readln()
-        }
-        return userGuess
-    }
-
-    val answer = getRandom()
-    val answerCharArray = answer?.toCharArray()
-    var userGuessCharArray = getGuess().toCharArray()
+    val answer = getRandomWord() //Gets random word from API
+    val answerCharArray = answer?.toCharArray() // turns it into a character array
+    var userGuessCharArray = getGuess().toCharArray() // Gets guess from user input
     var guessCount = 0
-    val charsInAnswer = mutableListOf<Char>()
-   // val answerBuilder = mutableListOf<Char>()
-    var answerBuilder = mutableMapOf<Int, Char>(0 to '_', 1 to '_', 2 to '_', 3 to '_', 4 to '_')
-
-    /**
-     * Also need to track if anly letters in guess are in the answer
-     */
+    val guessedCharsInAnswer = mutableListOf<Char>()
+    val totalGuessedChars = mutableListOf<Char>()
+    val answerBuilder = mutableMapOf(0 to '_', 1 to '_', 2 to '_', 3 to '_', 4 to '_')
 
     while (!userGuessCharArray.contentEquals(answerCharArray) && guessCount < 5) {
-/*
-        answer?.forEach {
-            if (it == userGuessCharArray[answer.indexOf(it)]) {
-                print("$it ")
-            } else {
-                print("_ ")
-            }
-        }
-
- */
 
         answerCharArray?.forEach {
             if (it == userGuessCharArray[answer.indexOf(it)]) {
-                answerBuilder.put(answer.indexOf(it), it )
+                answerBuilder.put(answer.indexOf(it), it)
+                /**
+                 * There is a bug here, Ex. if the word was borty, and the first guess was horte, and next one busty,
+                 * it will give you the answer even though you have not guessed it correctly
+                 */
             }
         }
         answerCharArray?.forEach {
             if (it in userGuessCharArray) {
-                charsInAnswer.add(it)
+                guessedCharsInAnswer.add(it)
             }
         }
         println(
-            answerBuilder.values.toString().replace(",", "").
-            replace("[","").replace("]", "").trim()
+            answerBuilder.values.toString().replace(",", "").replace("[", "").replace("]", "").trim()
         )
-        println("Characters in answer: ${charsInAnswer.toSet()}") //to set gets rid of duplicates in list
+
+        userGuessCharArray.forEach { totalGuessedChars.add(it) } // creates list of all guessed characters
+        /**s
+         * should subtract chars in answer from this list
+         */
+        println("List of characters in guesses: ${totalGuessedChars.toSet()}")
+        println("Characters in answer: ${guessedCharsInAnswer.toSet()}") //to set gets rid of duplicates in list
         guessCount++
         userGuessCharArray = getGuess().toCharArray() // gets new answer from user
     }
