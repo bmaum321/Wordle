@@ -13,7 +13,6 @@ suspend fun main() {
     suspend fun getRandomWordFromApi(): String? {
         return when (val random = getRandomWordsUseCase.getRandomWord()) {
             is RandomWordResults.Success -> {
-                //println(random.response.word)
                 val answer = random.response.word
                 answer
             }
@@ -42,14 +41,23 @@ suspend fun main() {
              * This difficulty will find words that have no repeating letters, this could be expanded upon to find more
              * common words
              */
-            val answer = wordListAsCharArrays.filter { it.distinct().count() == 5 }.random().joinToString("")
+           // val answer = wordListAsCharArrays.filter { it.distinct().count() == 5 }.random().joinToString("")
+            val wordCount = wordListAsCharArrays.filter { it.distinct().count() == 5 }.count { it.last() != 's' }
+            val answer = wordListAsCharArrays
+                .filter { it.distinct().count() == 5 }
+                .filter { it.last() != 's' } //removes any plural words
+                .random()
+                .joinToString("")
+            println("number of words in this difficulty is: $wordCount, there are no plurals or repeated letters in words")
             playGame.wordleGame(answer, masterWordList, Constants.EASY)
         }
         Constants.MEDIUM -> {
             /**
-             * This difficulty will use all 5-letter words in the list, so words can have repeating letters
+             * This difficulty will use all 5-letter words in the list, so words can have repeating letters or be plural
              */
+            val wordCount = fiveLetterWords.count()
             val answer = fiveLetterWords.random()
+            println("Number of words in this difficulty is $wordCount, words can contain plurals and/or letters can be repeated")
             playGame.wordleGame(answer, masterWordList, Constants.MEDIUM)
         }
         Constants.HARD -> {
@@ -60,6 +68,7 @@ suspend fun main() {
             if (answer == null) {
                 println("Failed to retrieve word from API")
             } else {
+                println("Word can be anything, Good Luck!")
                 playGame.wordleGame(answer, masterWordList, Constants.HARD)
             }
             /**
