@@ -1,6 +1,9 @@
 package com.brian.wordle.usecase
 
+import com.brian.wordle.data.Constants
+import com.brian.wordle.userinput.SelectDifficulty
 import com.brian.wordle.userinput.getGuess
+import com.brian.wordle.userinput.getGuessForHardDifficulty
 
 class PlayGameUseCase {
     /**
@@ -11,9 +14,14 @@ class PlayGameUseCase {
     An incorrect letter turns gray. (in the console it is added to a list that is shown)
     Letters can be used more than once(depending on difficulty)
      */
-    fun wordleGame(answer: String?, masterWordList: List<String>) {
+    fun wordleGame(answer: String?, masterWordList: List<String>, difficulty: Int) {
         val answerCharArray = answer?.toCharArray() // turns answer into a character array
-        var userGuessCharArray = getGuess(masterWordList).toCharArray() // Gets initial guess from user input as char array
+        var userGuessCharArray: CharArray = if (difficulty != Constants.HARD){
+            getGuess(masterWordList).toCharArray() // Gets initial guess from user input as char array
+        }else {
+            getGuessForHardDifficulty().toCharArray() // this function doesnt check if input is in list
+        }
+
         var guessCount = 0
         val guessedCharsInAnswer = mutableListOf<Char>()
         val guessedCharsNotInAnswer = mutableListOf<Char>()
@@ -60,7 +68,12 @@ class PlayGameUseCase {
             println("Characters not in the answer: ${guessedCharsNotInAnswer.toSet()}")
             println("Characters in the answer: ${guessedCharsInAnswer.toSet()}") //to set gets rid of duplicates in list
             guessCount ++
-            userGuessCharArray = getGuess(masterWordList).toCharArray() // gets new answer from user
+            // gets new answer from user
+            userGuessCharArray = if (difficulty != Constants.HARD){
+                getGuess(masterWordList).toCharArray() // Gets guess from user input as char array
+            }else {
+                getGuessForHardDifficulty().toCharArray() // this function doesn't check if input is in list
+            }
         }
 
         if (userGuessCharArray.contentEquals(answerCharArray)) {

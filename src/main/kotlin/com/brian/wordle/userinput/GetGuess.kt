@@ -13,3 +13,16 @@ fun getGuess(wordList: List<String>): String {
     }
     return userGuess
 }
+
+/**
+ * This version doesn't check if input is in the word list because the API can contain words that aren't in the list
+ */
+fun getGuessForHardDifficulty(): String {
+    println("Enter your guess: ")
+    var userGuess = readln()
+    while (userGuess.length != 5) {
+        println("Guess is not 5 characters, please enter a new guess")
+        userGuess = readln()
+    }
+    return userGuess
+}

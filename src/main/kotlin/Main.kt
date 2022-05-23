@@ -26,11 +26,9 @@ suspend fun main() {
 
     /**
      * Create master word list from the file. The file is the official Scrabble TWL(tournament word list)
+     * read that useLines is better suited than readLines for large text files
      */
-    val masterWordList = mutableListOf<String>()
-    File("src/main/kotlin/com/brian/wordle/data/words").readLines().forEach {
-        (masterWordList.add(it))
-    }
+    val masterWordList = File("src/main/kotlin/com/brian/wordle/data/words").useLines { it.toList() }
     /**
      * I feel like there are ways to combine some of these statements to make the code more concise
      */
@@ -41,18 +39,18 @@ suspend fun main() {
     when (SelectDifficulty().getDifficulty()) {
         Constants.EASY -> {
             /**
-             * This difficulty will find words that have no repeating letters, this could be sxpaneded upon to find more
+             * This difficulty will find words that have no repeating letters, this could be expanded upon to find more
              * common words
              */
             val answer = wordListAsCharArrays.filter { it.distinct().count() == 5 }.random().joinToString("")
-            playGame.wordleGame(answer, masterWordList)
+            playGame.wordleGame(answer, masterWordList, Constants.EASY)
         }
         Constants.MEDIUM -> {
             /**
              * This difficulty will use all 5-letter words in the list, so words can have repeating letters
              */
             val answer = fiveLetterWords.random()
-            playGame.wordleGame(answer, masterWordList)
+            playGame.wordleGame(answer, masterWordList, Constants.MEDIUM)
         }
         Constants.HARD -> {
             /**
@@ -62,12 +60,12 @@ suspend fun main() {
             if (answer == null) {
                 println("Failed to retrieve word from API")
             } else {
-                playGame.wordleGame(answer, masterWordList)
+                playGame.wordleGame(answer, masterWordList, Constants.HARD)
             }
             /**
-             *There is a bug here, the api can pick words that aren't in the word list file, so even though the correct
-             * word may be chosen, the input will fail because it is not found in the word list that the function checks
-             * against
+             *Currently, this will not check user input against word list because the api can contain words that are not
+             * in the list. Could expand on this by creating a new list that pulls all 5 letter words from the same api and checking
+             * against that list to make sure bogus words aren't used as guesses
              *
              */
         }
