@@ -16,20 +16,26 @@ class PlayGameUseCase {
      */
     fun wordleGame(answer: String?, masterWordList: List<String>, difficulty: Int) {
         val answerCharArray = answer?.toCharArray() // turns answer into a character array
-        var userGuessCharArray: CharArray = if (difficulty != Constants.HARD){
+        var userGuessCharArray: CharArray = if (difficulty != Constants.HARD) {
             getGuess(masterWordList).toCharArray() // Gets initial guess from user input as char array
-        }else {
-            getGuessForHardDifficulty().toCharArray() // this function doesnt check if input is in list
+        } else {
+            getGuessForHardDifficulty().toCharArray() // this function doesn't check if input is in list
         }
 
         var guessCount = 0
         val guessedCharsInAnswer = mutableListOf<Char>()
         val guessedCharsNotInAnswer = mutableListOf<Char>()
-        val answerBuilder = mutableListOf('_', '_', '_', '_', '_') // this is what will be outputted to console as the user makes guesses
+        val answerBuilder = mutableListOf(
+            '_',
+            '_',
+            '_',
+            '_',
+            '_'
+        ) // this is what will be outputted to console as the user makes guesses
         /**
          * PLay the game while the input does not equal the answer and with 6 total guesses
          */
-        while (! userGuessCharArray.contentEquals(answerCharArray) && guessCount < 5) {
+        while (!userGuessCharArray.contentEquals(answerCharArray) && guessCount < 5) {
             /**
              * Compares the guess to the answer char by char, if the chars are equal, put that char in the answer builder
              */
@@ -52,7 +58,7 @@ class PlayGameUseCase {
              * Print the answer builder
              */
             println(
-                    answerBuilder.toString().replace(",", "").replace("[", "").replace("]", "").trim()
+                answerBuilder.toString().replace(",", "").replace("[", "").replace("]", "").trim()
             )
 
             userGuessCharArray.forEach { guessedCharsNotInAnswer.add(it) } // creates list of all guessed characters
@@ -67,11 +73,11 @@ class PlayGameUseCase {
             }
             println("Characters not in the answer: ${guessedCharsNotInAnswer.toSet()}")
             println("Characters in the answer: ${guessedCharsInAnswer.toSet()}") //to set gets rid of duplicates in list
-            guessCount ++
+            guessCount++
             // gets new answer from user
-            userGuessCharArray = if (difficulty != Constants.HARD){
+            userGuessCharArray = if (difficulty != Constants.HARD) {
                 getGuess(masterWordList).toCharArray() // Gets guess from user input as char array
-            }else {
+            } else {
                 getGuessForHardDifficulty().toCharArray() // this function doesn't check if input is in list
             }
         }

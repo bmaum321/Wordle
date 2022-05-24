@@ -28,6 +28,7 @@ suspend fun main() {
      * read that useLines is better suited than readLines for large text files
      */
     val masterWordList = File("src/main/kotlin/com/brian/wordle/data/words").useLines { it.toList() }
+
     /**
      * I feel like there are ways to combine some of these statements to make the code more concise
      */
@@ -41,13 +42,14 @@ suspend fun main() {
              * This difficulty will find words that have no repeating letters, this could be expanded upon to find more
              * common words
              */
-           // val answer = wordListAsCharArrays.filter { it.distinct().count() == 5 }.random().joinToString("")
-            val wordCount = wordListAsCharArrays.filter { it.distinct().count() == 5 }.count { it.last() != 's' }
-            val answer = wordListAsCharArrays
+            val wordCount = wordListAsCharArrays
                 .filter { it.distinct().count() == 5 }
+                .count { it.last() != 's' }
+            val answer = wordListAsCharArrays
+                .filter { it.distinct().count() == 5 }// removes any words with duplicate letters
                 .filter { it.last() != 's' } //removes any plural words
-                .random()
-                .joinToString("")
+                .random() //picks a random word
+                .joinToString("") // creates string from char array
             println("number of words in this difficulty is: $wordCount, there are no plurals or repeated letters in words")
             playGame.wordleGame(answer, masterWordList, Constants.EASY)
         }

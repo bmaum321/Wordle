@@ -8,14 +8,12 @@ import com.brian.wordle.models.Words
 class GetWordsUseCase(private val apiClient: ApiClient) {
 
     suspend fun getWords(): Results {
-        val response = apiClient.getWord()
-        return when (response) {
+        return when (val response = apiClient.getWord()) {
             is ApiResponse.Success -> Results.Success(response.data)
             is ApiResponse.Failure -> Results.Failure(response.message) // TODO() placeholder
         }
     }
 }
-
 
 sealed class Results {
     class Success(val response: Words) : Results()
